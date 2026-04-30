@@ -85,6 +85,25 @@ button {
   white-space: nowrap;
 }
 
+.interval-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.interval-control input {
+  width: 72px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 8px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+
 main {
   width: min(1180px, calc(100% - 32px));
   margin: 20px auto 40px;

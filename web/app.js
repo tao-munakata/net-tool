@@ -120,11 +120,29 @@ async function refreshAll() {
   await Promise.all([loadSnapshot(), loadWifi(), loadQuality(), loadTraces()]);
 }
 
+function refreshIntervalMs() {
+  const input = document.getElementById("refresh-interval");
+  const seconds = Math.max(1, Number.parseInt(input.value, 10) || 30);
+  input.value = seconds;
+  localStorage.setItem("netvizRefreshIntervalSec", String(seconds));
+  return seconds * 1000;
+}
+
+function restartAutoRefresh() {
+  clearInterval(state.timer);
+  if (document.getElementById("auto").checked) {
+    state.timer = setInterval(refreshAll, refreshIntervalMs());
+  }
+}
+
+const savedInterval = Number.parseInt(localStorage.getItem("netvizRefreshIntervalSec"), 10);
+if (savedInterval > 0) {
+  document.getElementById("refresh-interval").value = savedInterval;
+}
+
 document.getElementById("refresh").addEventListener("click", refreshAll);
-let timer = setInterval(refreshAll, 30000);
-document.getElementById("auto").addEventListener("change", (event) => {
-  if (event.target.checked) timer = setInterval(refreshAll, 30000);
-  else clearInterval(timer);
-});
+document.getElementById("auto").addEventListener("change", restartAutoRefresh);
+document.getElementById("refresh-interval").addEventListener("change", restartAutoRefresh);
+restartAutoRefresh();
 
 refreshAll().catch((error) => setText("status-line", error.message));

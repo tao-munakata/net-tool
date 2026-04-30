@@ -129,6 +129,9 @@ class NetvizHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/":
             self.path = "/index.html"
             return super().do_GET()
+        if parsed.path.startswith("/static/"):
+            self.path = parsed.path.removeprefix("/static")
+            return super().do_GET()
         if parsed.path == "/api/snapshot":
             return self._send_json(snapshot_payload(self.db_file))
         if parsed.path == "/api/wifi":

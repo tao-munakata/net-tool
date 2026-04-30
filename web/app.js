@@ -20,12 +20,14 @@ async function loadSnapshot() {
   const wan = data.wan || {};
   const lan = data.lan || {};
   const quality = data.quality || {};
+  const errors = data.errors || {};
 
   setText("public-ip", wan.public_ip || "-");
   setText("isp", wan.org || wan.asn || "-");
   setText("wifi-now", wifi.ssid ? `${wifi.ssid} ${fmt(wifi.rssi_dbm, " dBm")}` : "-");
   setText("gw-rtt", fmt(lan.gw_rtt_avg_ms?.toFixed?.(1) ?? lan.gw_rtt_avg_ms, " ms"));
   setText("quality-now", quality.dl_mbps ? `${quality.dl_mbps} / ${quality.ul_mbps} Mbps` : fmt(quality.ping_avg_ms?.toFixed?.(1), " ms ping"));
+  setText("errors-now", `ping ${errors.ping ?? 0} / DNS ${errors.dns ?? 0}`);
   setText("status-line", `local ${wifi.local_ip || "-"} via ${lan.gateway_ip || "-"} / updated ${wifi.ts ? timeLabel(wifi.ts) : "-"}`);
 }
 

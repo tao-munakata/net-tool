@@ -37,13 +37,38 @@ def decorate_ts(row: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 def snapshot_payload(db_file: Path) -> dict[str, Any]:
+    since_1h = parse_since("1h")
     with db.connect(db_file) as conn:
+        ping_errors = conn.execute(
+            """
+            SELECT COUNT(*) AS count
+            FROM quality_metrics
+            WHERE ts >= ?
+              AND source = 'ping'
+              AND (ping_loss_pct >= 100 OR ping_avg_ms IS NULL)
+            """,
+            (since_1h,),
+        ).fetchone()["count"]
+        dns_errors = conn.execute(
+            """
+            SELECT COUNT(*) AS count
+            FROM dns_metrics
+            WHERE ts >= ?
+              AND query_ms IS NULL
+            """,
+            (since_1h,),
+        ).fetchone()["count"]
         return {
             "wifi": decorate_ts(db.latest(conn, "wifi_metrics")),
             "lan": decorate_ts(db.latest(conn, "lan_metrics")),
             "wan": decorate_ts(db.latest(conn, "wan_metrics")),
             "quality": decorate_ts(db.latest(conn, "quality_metrics")),
             "dns": [decorate_ts(dict(row)) for row in conn.execute("SELECT * FROM dns_metrics ORDER BY ts DESC LIMIT 6")],
+            "errors": {
+                "since": "1h",
+                "ping": ping_errors,
+                "dns": dns_errors,
+            },
         }
 
 

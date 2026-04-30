@@ -12,6 +12,9 @@ dependencies = [
 [project.scripts]
 netviz = "netviz.cli:main"
 
+[tool.setuptools.packages.find]
+include = ["netviz*"]
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"

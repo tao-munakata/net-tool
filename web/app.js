@@ -142,6 +142,22 @@ if (savedInterval > 0) {
   document.getElementById("refresh-interval").value = savedInterval;
 }
 
+async function resetStats() {
+  if (!confirm("統計情報をリセットしますか？履歴データは全て削除されます。")) return;
+  const button = document.getElementById("reset");
+  button.disabled = true;
+  try {
+    const response = await fetch("/api/reset", { method: "POST" });
+    if (!response.ok) throw new Error(`/api/reset: ${response.status}`);
+    await refreshAll();
+  } catch (error) {
+    setText("status-line", error.message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById("reset").addEventListener("click", resetStats);
 document.getElementById("refresh").addEventListener("click", refreshAll);
 document.getElementById("auto").addEventListener("change", restartAutoRefresh);
 document.getElementById("refresh-interval").addEventListener("change", restartAutoRefresh);

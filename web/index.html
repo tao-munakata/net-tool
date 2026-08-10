@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Network Visualizer</title>
-    <link rel="stylesheet" href="/static/style.css?v=20260430-errors" />
+    <link rel="stylesheet" href="/static/style.css?v=20260811-reset" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -17,6 +17,7 @@
         <p id="status-line">collecting local network state...</p>
       </div>
       <div class="actions">
+        <button id="reset" type="button" class="btn-reset" title="ネット環境が変わった時に統計をリセット">リセット</button>
         <button id="refresh" type="button">Refresh now</button>
         <label class="toggle"><input id="auto" type="checkbox" checked /> 自動更新</label>
         <label class="interval-control">
@@ -70,6 +71,6 @@
       </section>
     </main>
 
-    <script src="/static/app.js?v=20260430-errors"></script>
+    <script src="/static/app.js?v=20260811-reset"></script>
   </body>
 </html>

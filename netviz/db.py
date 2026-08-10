@@ -157,6 +157,21 @@ def insert_trace(conn: sqlite3.Connection, trace: dict[str, Any]) -> int:
     return trace_id
 
 
+def reset_stats(conn: sqlite3.Connection) -> None:
+    for table in (
+        "wifi_metrics",
+        "lan_metrics",
+        "wan_metrics",
+        "dns_metrics",
+        "quality_metrics",
+        "traces",
+        "hops",
+        "errors",
+    ):
+        conn.execute(f"DELETE FROM {table}")
+    conn.commit()
+
+
 def log_error(conn: sqlite3.Connection, ts: int, collector: str, message: str) -> None:
     conn.execute("INSERT INTO errors (ts, collector, message) VALUES (?, ?, ?)", (ts, collector, message[:1000]))
 

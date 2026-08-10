@@ -1,6 +1,6 @@
 [project]
 name = "network-visualizer"
-version = "0.1.1"
+version = "0.1.2"
 description = "Local macOS Wi-Fi to internet network visualizer"
 readme = "README.md"
 requires-python = ">=3.10"

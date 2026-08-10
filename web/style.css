@@ -82,6 +82,17 @@ button {
   font-weight: 700;
 }
 
+.btn-reset {
+  border-color: var(--line);
+  color: var(--muted);
+  background: transparent;
+}
+
+.btn-reset:hover {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
 .toggle {
   color: var(--muted);
   white-space: nowrap;

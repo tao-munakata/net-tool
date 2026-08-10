@@ -72,6 +72,11 @@ def snapshot_payload(db_file: Path) -> dict[str, Any]:
         }
 
 
+def reset_stats(db_file: Path) -> None:
+    with db.connect(db_file) as conn:
+        db.reset_stats(conn)
+
+
 def latest_traces_payload(db_file: Path) -> list[dict[str, Any]]:
     with db.connect(db_file) as conn:
         traces = conn.execute("SELECT * FROM traces ORDER BY ts DESC LIMIT 3").fetchall()
@@ -99,6 +104,11 @@ def create_app(db_file: Path):
     @app.get("/api/snapshot")
     def snapshot() -> dict[str, Any]:
         return snapshot_payload(db_file)
+
+    @app.post("/api/reset")
+    def reset() -> dict[str, Any]:
+        reset_stats(db_file)
+        return {"ok": True}
 
     @app.get("/api/wifi")
     def wifi_series(since: str = "1h") -> list[dict[str, Any]]:
@@ -184,6 +194,14 @@ class NetvizHandler(SimpleHTTPRequestHandler):
                 row = decorate_ts(db.latest(conn, "lan_metrics"))
                 return self._send_json(row.get("arp_entries", []) if row else [])
         return super().do_GET()
+
+    def do_POST(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/reset":
+            reset_stats(self.db_file)
+            return self._send_json({"ok": True})
+        self.send_response(404)
+        self.end_headers()
 
 
 def serve_stdlib(db_file: Path, port: int) -> None:

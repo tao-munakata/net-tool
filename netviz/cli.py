@@ -87,10 +87,13 @@ def cmd_collect(args: argparse.Namespace) -> int:
         print(f"dashboard: http://localhost:{args.port}")
 
     with db.connect(db_path(args.db)) as conn:
+        cycle = 0
         while True:
-            payload = collect_once(include_slow=False)
+            include_slow = args.slow_every > 0 and cycle % args.slow_every == 0
+            payload = collect_once(include_slow=include_slow)
             write_measurements(conn, payload)
             print(json.dumps({"ts": payload.get("wifi", {}).get("ts"), "errors": payload.get("errors", [])}, ensure_ascii=False))
+            cycle += 1
             time.sleep(args.interval)
 
 
@@ -136,6 +139,9 @@ def build_parser() -> argparse.ArgumentParser:
     collect.add_argument("--interval", type=int, default=30)
     collect.add_argument("--serve", action="store_true")
     collect.add_argument("--port", type=int, default=8765)
+    collect.add_argument(
+        "--slow-every", type=int, default=10, help="run traceroute + full quality test every N cycles (0 disables)"
+    )
     collect.set_defaults(func=cmd_collect)
 
     serve_parser = sub.add_parser("serve", help="serve dashboard")

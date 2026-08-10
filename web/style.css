@@ -117,12 +117,53 @@ button {
   font: inherit;
 }
 
-main {
+.layout {
   width: min(1280px, calc(100% - 24px));
   margin: 12px auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+main {
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.error-log {
+  flex: 0 0 260px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+}
+
+.error-log #error-feed {
+  flex: 1;
+  overflow-y: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.error-log .error-line {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+.error-log .error-line.error-dns {
+  color: var(--warn);
+}
+
+.error-log .error-line.error-ping {
+  color: var(--bad);
 }
 
 .summary-grid {
@@ -213,8 +254,18 @@ canvas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .layout {
+    flex-direction: column;
+  }
+
   main {
     grid-template-columns: 1fr;
+  }
+
+  .error-log {
+    flex: none;
+    width: 100%;
+    height: 240px;
   }
 
   canvas,

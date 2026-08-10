@@ -72,6 +72,48 @@ def snapshot_payload(db_file: Path) -> dict[str, Any]:
         }
 
 
+def errors_feed_payload(db_file: Path, since_ms: int) -> list[dict[str, Any]]:
+    with db.connect(db_file) as conn:
+        dns_rows = conn.execute(
+            """
+            SELECT ts, resolver, hostname
+            FROM dns_metrics
+            WHERE ts >= ? AND query_ms IS NULL
+            ORDER BY ts ASC
+            """,
+            (since_ms,),
+        ).fetchall()
+        ping_rows = conn.execute(
+            """
+            SELECT ts, ping_avg_ms, ping_loss_pct
+            FROM quality_metrics
+            WHERE ts >= ?
+              AND source = 'ping'
+              AND (ping_loss_pct >= 100 OR ping_avg_ms IS NULL)
+            ORDER BY ts ASC
+            """,
+            (since_ms,),
+        ).fetchall()
+
+    items: list[dict[str, Any]] = []
+    for row in dns_rows:
+        items.append(
+            {
+                "ts": row["ts"],
+                "kind": "dns",
+                "message": f"DNS解決失敗: {row['hostname']} ({row['resolver']})",
+            }
+        )
+    for row in ping_rows:
+        detail = "応答なし" if row["ping_avg_ms"] is None else f"loss {row['ping_loss_pct']:.0f}%"
+        items.append({"ts": row["ts"], "kind": "ping", "message": f"Ping失敗: {detail}"})
+
+    items.sort(key=lambda item: item["ts"])
+    for item in items:
+        item["ts_iso"] = iso_from_ms(int(item["ts"]))
+    return items
+
+
 def reset_stats(db_file: Path) -> None:
     with db.connect(db_file) as conn:
         db.reset_stats(conn)
@@ -119,6 +161,10 @@ def create_app(db_file: Path):
     def quality_series(since: str = "24h") -> list[dict[str, Any]]:
         with db.connect(db_file) as conn:
             return [decorate_ts(row) for row in db.rows_since(conn, "quality_metrics", parse_since(since))]
+
+    @app.get("/api/errors")
+    def errors_feed(since: str = "1h") -> list[dict[str, Any]]:
+        return errors_feed_payload(db_file, parse_since(since))
 
     @app.get("/api/traces/latest")
     def latest_traces() -> list[dict[str, Any]]:
@@ -177,6 +223,9 @@ class NetvizHandler(SimpleHTTPRequestHandler):
             since = query.get("since", ["24h"])[0]
             with db.connect(self.db_file) as conn:
                 return self._send_json([decorate_ts(row) for row in db.rows_since(conn, "quality_metrics", parse_since(since))])
+        if parsed.path == "/api/errors":
+            since = query.get("since", ["1h"])[0]
+            return self._send_json(errors_feed_payload(self.db_file, parse_since(since)))
         if parsed.path == "/api/traces/latest":
             return self._send_json(latest_traces_payload(self.db_file))
         if parsed.path.startswith("/api/traces/"):

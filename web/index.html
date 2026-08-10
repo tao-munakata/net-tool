@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Network Visualizer</title>
-    <link rel="stylesheet" href="/static/style.css?v=20260811-reset" />
+    <link rel="stylesheet" href="/static/style.css?v=20260811-errors" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -28,49 +28,59 @@
       </div>
     </header>
 
-    <main>
-      <section class="summary-grid" aria-label="snapshot">
-        <article><span>Global IP</span><strong id="public-ip">-</strong></article>
-        <article><span>ISP / ASN</span><strong id="isp">-</strong></article>
-        <article><span>Wi-Fi</span><strong id="wifi-now">-</strong></article>
-        <article><span>Gateway RTT</span><strong id="gw-rtt">-</strong></article>
-        <article><span>Quality</span><strong id="quality-now">-</strong></article>
-        <article><span>Errors 1h</span><strong id="errors-now">-</strong></article>
-      </section>
+    <div class="layout">
+      <main>
+        <section class="summary-grid" aria-label="snapshot">
+          <article><span>Global IP</span><strong id="public-ip">-</strong></article>
+          <article><span>ISP / ASN</span><strong id="isp">-</strong></article>
+          <article><span>Wi-Fi</span><strong id="wifi-now">-</strong></article>
+          <article><span>Gateway RTT</span><strong id="gw-rtt">-</strong></article>
+          <article><span>Quality</span><strong id="quality-now">-</strong></article>
+          <article><span>Errors 1h</span><strong id="errors-now">-</strong></article>
+        </section>
 
-      <section class="panel">
+        <section class="panel">
+          <div class="panel-title">
+            <h2>Wi-Fi 信号</h2>
+            <span>RSSI / SNR, 過去 1h</span>
+          </div>
+          <canvas id="wifi-chart"></canvas>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>経路ツリー</h2>
+            <span>自機 → ルータ → インターネット</span>
+          </div>
+          <div id="trace-tree"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>世界地図</h2>
+            <span>traceroute hop locations</span>
+          </div>
+          <div id="map"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>品質履歴</h2>
+            <span>ping / throughput, 過去 24h</span>
+          </div>
+          <canvas id="quality-chart"></canvas>
+        </section>
+      </main>
+
+      <aside class="error-log" aria-label="error log">
         <div class="panel-title">
-          <h2>Wi-Fi 信号</h2>
-          <span>RSSI / SNR, 過去 1h</span>
+          <h2>エラー</h2>
+          <span>ping / DNS 失敗をリアルタイム表示</span>
         </div>
-        <canvas id="wifi-chart"></canvas>
-      </section>
+        <div id="error-feed"></div>
+      </aside>
+    </div>
 
-      <section class="panel">
-        <div class="panel-title">
-          <h2>経路ツリー</h2>
-          <span>自機 → ルータ → インターネット</span>
-        </div>
-        <div id="trace-tree"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-title">
-          <h2>世界地図</h2>
-          <span>traceroute hop locations</span>
-        </div>
-        <div id="map"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-title">
-          <h2>品質履歴</h2>
-          <span>ping / throughput, 過去 24h</span>
-        </div>
-        <canvas id="quality-chart"></canvas>
-      </section>
-    </main>
-
-    <script src="/static/app.js?v=20260811-reset"></script>
+    <script src="/static/app.js?v=20260811-errors"></script>
   </body>
 </html>

@@ -1,4 +1,5 @@
-const state = { wifiChart: null, qualityChart: null, map: null, markers: [] };
+const state = { wifiChart: null, qualityChart: null, map: null, markers: [], lastErrorTs: 0 };
+const MAX_ERROR_LINES = 300;
 
 const fmt = (value, suffix = "") => value === null || value === undefined ? "-" : `${value}${suffix}`;
 const timeLabel = (ts) => new Date(ts).toLocaleTimeString();
@@ -118,8 +119,23 @@ async function loadTraces() {
   drawMap(trace);
 }
 
+async function loadErrors() {
+  const rows = await json("/api/errors?since=1h");
+  const feed = document.getElementById("error-feed");
+  const fresh = rows.filter((row) => row.ts > state.lastErrorTs);
+  fresh.forEach((row) => {
+    const line = document.createElement("div");
+    line.className = `error-line error-${row.kind}`;
+    line.textContent = `[${timeLabel(row.ts)}] ${row.message}`;
+    feed.appendChild(line);
+    state.lastErrorTs = Math.max(state.lastErrorTs, row.ts);
+  });
+  while (feed.childElementCount > MAX_ERROR_LINES) feed.removeChild(feed.firstChild);
+  if (fresh.length) feed.scrollTop = feed.scrollHeight;
+}
+
 async function refreshAll() {
-  await Promise.all([loadSnapshot(), loadWifi(), loadQuality(), loadTraces()]);
+  await Promise.all([loadSnapshot(), loadWifi(), loadQuality(), loadTraces(), loadErrors()]);
 }
 
 function refreshIntervalMs() {
@@ -149,6 +165,8 @@ async function resetStats() {
   try {
     const response = await fetch("/api/reset", { method: "POST" });
     if (!response.ok) throw new Error(`/api/reset: ${response.status}`);
+    state.lastErrorTs = 0;
+    document.getElementById("error-feed").innerHTML = "";
     await refreshAll();
   } catch (error) {
     setText("status-line", error.message);
